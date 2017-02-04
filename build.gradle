@@ -1,0 +1,56 @@
+group 'Selenide-Spock-Allure'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'groovy'
+apply plugin: 'ru.d10xa.allure'
+
+defaultTasks 'clean', 'browserChrome', 'allureReport'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.3.11'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile group: 'org.spockframework', name: 'spock-core', version: '1.1-groovy-2.4-rc-3'
+    testCompile 'com.codeborne:selenide:4.1'
+    testCompile group: 'ru.yandex.qatools.allure', name: 'allure-spock-adaptor-parent', version: '1.0'
+    compile 'io.github.bonigarcia:webdrivermanager:1.5.0'
+    compile 'org.slf4j:slf4j-nop:1.7.21'
+
+}
+
+task browserFirefox(type: Test) {
+    systemProperties['browser'] = 'firefox'
+}
+
+task browserChrome(type: Test) {
+    systemProperties['browser'] = 'chrome'
+    systemProperties['webdriver.chrome.driver'] = 'c:\\chromedriver.exe'
+}
+
+
+tasks.withType(Test).all { testTask ->
+    systemProperties ['allure.results.directory'] = file("$buildDir/allure-results")
+    systemProperties['selenide.reports'] = file("$buildDir/selenide-results")
+    testTask.systemProperties['file.encoding'] = 'UTF-8'
+    testTask.testLogging.showStandardStreams = true
+    testTask.outputs.upToDateWhen { false }
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "ru.d10xa:gradle-allure-plugin:0.5.2"
+    }
+}
+
+allure {
+    aspectjweaver = true
+
+    spock = true
+    junit = true
+}
